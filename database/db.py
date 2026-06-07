@@ -1,6 +1,6 @@
 import sqlite3
 
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 DATABASE = "spendly.db"
 
@@ -90,6 +90,17 @@ def seed_db():
             expenses,
         )
         conn.commit()
+    finally:
+        conn.close()
+
+
+def get_user_by_email(email):
+    """Return the user row for the given email, or None if not found."""
+    conn = get_db()
+    try:
+        return conn.execute(
+            "SELECT * FROM users WHERE email = ?", (email,)
+        ).fetchone()
     finally:
         conn.close()
 
