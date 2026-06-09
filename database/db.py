@@ -124,3 +124,95 @@ def create_user(name, email, password):
         raise ValueError("A user with this email already exists.")
     finally:
         conn.close()
+
+
+def get_user_by_id(user_id):
+    """Return the user row for the given id, or None if not found."""
+    conn = get_db()
+    try:
+        return conn.execute(
+            "SELECT id, name, email, created_at FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+    finally:
+        conn.close()
+
+
+def get_expense_stats(user_id):
+    """Return dict with total_spent (float), transaction_count (int), and top_category (str)."""
+    conn = get_db()
+    try:
+        # Aggregate stats
+        row = conn.execute(
+            "SELECT COALESCE(SUM(amount), 0) AS total_spent, "
+            "       COUNT(*) AS transaction_count "
+            "FROM expenses WHERE user_id = ?",
+            (user_id,),
+        ).fetchone()
+
+        total_spent = float(row["total_spent"])
+        transaction_count = int(row["transaction_count"])
+
+        # Top category
+        top = conn.execute(
+            "SELECT category FROM expenses "
+            "WHERE user_id = ? "
+            "GROUP BY category "
+            "ORDER BY SUM(amount) DESC "
+            "LIMIT 1",
+            (user_id,),
+        ).fetchone()
+
+        top_category = top["category"] if top else "None"
+
+        return {
+            "total_spent": total_spent,
+            "transaction_count": transaction_count,
+            "top_category": top_category,
+        }
+    finally:
+        conn.close()
+
+
+def get_recent_expenses(user_id, limit=10):
+    """Return a list of expense rows ordered by date descending."""
+    conn = get_db()
+    try:
+        return conn.execute(
+            "SELECT id, date, description, category, amount "
+            "FROM expenses WHERE user_id = ? "
+            "ORDER BY date DESC LIMIT ?",
+            (user_id, limit),
+        ).fetchall()
+    finally:
+        conn.close()
+
+
+def get_category_breakdown(user_id):
+    """Return a list of dicts with category, total (float), and percentage (int)."""
+    conn = get_db()
+    try:
+        rows = conn.execute(
+            "SELECT category, SUM(amount) AS total "
+            "FROM expenses WHERE user_id = ? "
+            "GROUP BY category ORDER BY total DESC",
+            (user_id,),
+        ).fetchall()
+
+        if not rows:
+            return []
+
+        grand_total = sum(float(r["total"]) for r in rows)
+        breakdown = []
+        for r in rows:
+            cat_total = float(r["total"])
+            percentage = round(cat_total / grand_total * 100)
+            breakdown.append({
+                "category": r["category"],
+                "total": cat_total,
+                "percentage": percentage,
+            })
+
+        return breakdown
+    finally:
+        conn.close()
