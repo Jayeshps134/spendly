@@ -1,7 +1,11 @@
+from datetime import datetime
+
 from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug.security import check_password_hash
 
-from database.db import get_db, init_db, seed_db, create_user, get_user_by_email
+from database.db import (get_db, init_db, seed_db, create_user, get_user_by_email,
+                         get_user_by_id, get_expense_stats, get_recent_expenses,
+                         get_category_breakdown)
 
 app = Flask(__name__)
 app.secret_key = "spendly-dev-secret-key"
@@ -89,38 +93,50 @@ def profile():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    # All data is hardcoded — Step 5 will wire up real DB queries
+    user_id = session["user_id"]
+
+    # ── User info ── #
+    user_row = get_user_by_id(user_id)
+    if user_row is None:
+        session.clear()
+        return redirect(url_for("login"))
+
+    created_dt = datetime.strptime(user_row["created_at"], "%Y-%m-%d %H:%M:%S")
     user = {
-        "name": "Demo User",
-        "email": "demo@spendly.com",
-        "member_since": "January 2026",
+        "name": user_row["name"],
+        "email": user_row["email"],
+        "member_since": created_dt.strftime("%B %Y"),
     }
 
+    # ── Summary stats ── #
+    stats_raw = get_expense_stats(user_id)
     stats = {
-        "total_spent": "$280.98",
-        "transaction_count": "8",
-        "top_category": "Food",
+        "total_spent": f"${stats_raw['total_spent']:,.2f}",
+        "transaction_count": stats_raw["transaction_count"],
+        "top_category": stats_raw["top_category"],
     }
 
+    # ── Transaction history ── #
+    expense_rows = get_recent_expenses(user_id)
     transactions = [
-        {"date": "2026-06-07", "description": "Lunch at work",         "category": "Food",         "amount": "$15.25"},
-        {"date": "2026-06-07", "description": "Coffee with friend",    "category": "Other",        "amount": "$8.50"},
-        {"date": "2026-06-06", "description": "New headphones",        "category": "Shopping",      "amount": "$79.99"},
-        {"date": "2026-06-05", "description": "Movie tickets",         "category": "Entertainment", "amount": "$24.00"},
-        {"date": "2026-06-04", "description": "Gym membership",        "category": "Health",        "amount": "$35.00"},
-        {"date": "2026-06-03", "description": "Monthly internet bill", "category": "Bills",         "amount": "$59.99"},
-        {"date": "2026-06-02", "description": "Uber ride to downtown", "category": "Transport",     "amount": "$12.75"},
-        {"date": "2026-06-01", "description": "Grocery shopping",      "category": "Food",          "amount": "$45.50"},
+        {
+            "date": r["date"],
+            "description": r["description"] or "",
+            "category": r["category"],
+            "amount": f"${r['amount']:,.2f}",
+        }
+        for r in expense_rows
     ]
 
+    # ── Category breakdown ── #
+    breakdown = get_category_breakdown(user_id)
     categories = [
-        {"name": "Food",          "amount": "$60.75", "percentage": 22},
-        {"name": "Shopping",      "amount": "$79.99", "percentage": 28},
-        {"name": "Bills",         "amount": "$59.99", "percentage": 21},
-        {"name": "Health",        "amount": "$35.00", "percentage": 12},
-        {"name": "Entertainment", "amount": "$24.00", "percentage": 9},
-        {"name": "Transport",     "amount": "$12.75", "percentage": 5},
-        {"name": "Other",         "amount": "$8.50",  "percentage": 3},
+        {
+            "name": c["category"],
+            "amount": f"${c['total']:,.2f}",
+            "percentage": c["percentage"],
+        }
+        for c in breakdown
     ]
 
     return render_template(
