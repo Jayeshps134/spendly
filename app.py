@@ -5,7 +5,7 @@ from werkzeug.security import check_password_hash
 
 from database.db import (get_db, init_db, seed_db, create_user, get_user_by_email,
                          get_user_by_id, get_expense_stats, get_recent_expenses,
-                         get_category_breakdown)
+                         get_expenses_by_date_range, get_category_breakdown)
 
 app = Flask(__name__)
 app.secret_key = "spendly-dev-secret-key"
@@ -88,12 +88,39 @@ def logout():
     return redirect(url_for("landing"))
 
 
+def _is_valid_date(s):
+    """Return True if s is a YYYY-MM-DD date string."""
+    try:
+        datetime.strptime(s, "%Y-%m-%d")
+        return True
+    except (ValueError, TypeError):
+        return False
+
+
 @app.route("/profile")
 def profile():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
     user_id = session["user_id"]
+
+    # ── Parse optional date filter ── #
+    raw_start = request.args.get("start_date", "").strip()
+    raw_end = request.args.get("end_date", "").strip()
+
+    # Validate date format — discard malformed values
+    if raw_start and not _is_valid_date(raw_start):
+        raw_start = ""
+    if raw_end and not _is_valid_date(raw_end):
+        raw_end = ""
+
+    # If both provided and start > end, treat as no filter
+    if raw_start and raw_end and raw_start > raw_end:
+        raw_start = raw_end = ""
+
+    # Convert to None for DB helpers (None = no filter)
+    start_date = raw_start or None
+    end_date = raw_end or None
 
     # ── User info ── #
     user_row = get_user_by_id(user_id)
@@ -108,16 +135,20 @@ def profile():
         "member_since": created_dt.strftime("%B %Y"),
     }
 
-    # ── Summary stats ── #
-    stats_raw = get_expense_stats(user_id)
+    # ── Summary stats (with optional date filter) ── #
+    stats_raw = get_expense_stats(user_id, start_date, end_date)
     stats = {
         "total_spent": f"${stats_raw['total_spent']:,.2f}",
         "transaction_count": stats_raw["transaction_count"],
         "top_category": stats_raw["top_category"],
     }
 
-    # ── Transaction history ── #
-    expense_rows = get_recent_expenses(user_id)
+    # ── Transaction history (filtered or unfiltered) ── #
+    if start_date or end_date:
+        expense_rows = get_expenses_by_date_range(user_id, start_date, end_date)
+    else:
+        expense_rows = get_recent_expenses(user_id)
+
     transactions = [
         {
             "date": r["date"],
@@ -128,8 +159,8 @@ def profile():
         for r in expense_rows
     ]
 
-    # ── Category breakdown ── #
-    breakdown = get_category_breakdown(user_id)
+    # ── Category breakdown (with optional date filter) ── #
+    breakdown = get_category_breakdown(user_id, start_date, end_date)
     categories = [
         {
             "name": c["category"],
@@ -145,6 +176,8 @@ def profile():
         stats=stats,
         transactions=transactions,
         categories=categories,
+        start_date=start_date,
+        end_date=end_date,
     )
 
 

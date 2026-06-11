@@ -40,6 +40,30 @@
         {# ── 3. Transaction history ── #}
         <div class="profile-card">
             <h2 class="section-title">Transaction History</h2>
+
+            {# ── Date filter form ── #}
+            <div class="date-filter">
+                <form method="GET" action="{{ url_for('profile') }}" class="date-filter-form">
+                    <div class="filter-field">
+                        <label for="start_date">From</label>
+                        <input type="date" id="start_date" name="start_date" value="{{ start_date or '' }}">
+                    </div>
+                    <div class="filter-field">
+                        <label for="end_date">To</label>
+                        <input type="date" id="end_date" name="end_date" value="{{ end_date or '' }}">
+                    </div>
+                    <button type="submit" class="btn-primary filter-btn">Filter</button>
+                    <a href="{{ url_for('profile') }}" class="btn-ghost filter-btn">Clear</a>
+                </form>
+            </div>
+
+            {% if start_date or end_date %}
+            <p class="filter-badge">
+                Showing expenses from {{ start_date or 'the beginning' }} to {{ end_date or 'today' }}
+            </p>
+            {% endif %}
+
+            {% if transactions %}
             <div class="table-wrapper">
                 <table class="transaction-table">
                     <thead>
@@ -62,6 +86,9 @@
                     </tbody>
                 </table>
             </div>
+            {% else %}
+            <p class="empty-message">No expenses found in this date range.</p>
+            {% endif %}
         </div>
 
         {# ── 4. Category breakdown ── #}
