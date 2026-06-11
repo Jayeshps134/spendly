@@ -256,6 +256,73 @@
 .category-bar-6 { background: var(--accent-light); }
 .category-bar-7 { background: var(--accent-2-light); }
 
+/* --- Date filter form --- */
+
+.date-filter {
+    margin-bottom: 1.5rem;
+}
+
+.date-filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.filter-field label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+}
+
+.filter-field input[type="date"] {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--ink);
+    background: var(--paper);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.filter-field input[type="date"]:focus {
+    border-color: var(--accent);
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+/* --- Filter indicator --- */
+
+.filter-badge {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    margin-bottom: 1rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--accent-light);
+    border-radius: var(--radius-sm);
+    display: inline-block;
+}
+
+/* --- Empty state --- */
+
+.empty-message {
+    text-align: center;
+    color: var(--ink-faint);
+    font-style: italic;
+    padding: 2rem 0;
+}
+
 .category-amount {
     font-size: 0.9rem;
     font-weight: 500;
@@ -278,6 +345,15 @@
     .category-bar-row {
         grid-template-columns: 90px 1fr 60px;
         gap: 0.75rem;
+    }
+
+    .date-filter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-field input[type="date"] {
+        width: 100%;
     }
 }
 
