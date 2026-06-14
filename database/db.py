@@ -266,3 +266,28 @@ def get_category_breakdown(user_id, start_date=None, end_date=None):
         return breakdown
     finally:
         conn.close()
+
+
+def create_expense(user_id, amount, category, date, description=None):
+    """Insert a new expense and return its id.
+
+    Raises ValueError if required values are missing or invalid.
+    """
+    if amount is None or amount <= 0:
+        raise ValueError("Amount must be a positive number.")
+    if not category:
+        raise ValueError("Category is required.")
+    if not date:
+        raise ValueError("Date is required.")
+
+    conn = get_db()
+    try:
+        cur = conn.execute(
+            "INSERT INTO expenses (user_id, amount, category, date, description) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (user_id, amount, category, date, description),
+        )
+        conn.commit()
+        return cur.lastrowid
+    finally:
+        conn.close()

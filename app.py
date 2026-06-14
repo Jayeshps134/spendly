@@ -1,14 +1,17 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug.security import check_password_hash
 
 from database.db import (get_db, init_db, seed_db, create_user, get_user_by_email,
                          get_user_by_id, get_expense_stats, get_recent_expenses,
-                         get_expenses_by_date_range, get_category_breakdown)
+                         get_expenses_by_date_range, get_category_breakdown,
+                         create_expense)
 
 app = Flask(__name__)
 app.secret_key = "spendly-dev-secret-key"
+
+CATEGORIES = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other"]
 
 
 # ------------------------------------------------------------------ #
@@ -188,9 +191,56 @@ def analytics():
     return render_template("analytics.html")
 
 
-@app.route("/expenses/add")
+@app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
-    return "Add expense — coming in Step 7"
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if request.method == "GET":
+        return _render_add_expense_form()
+
+    # POST — process the form
+    amount_raw = request.form.get("amount", "").strip()
+    category = request.form.get("category", "").strip()
+    date_str = request.form.get("date", "").strip()
+    description = request.form.get("description", "").strip() or None
+
+    # ── Validate amount ── #
+    if not amount_raw:
+        return _render_add_expense_form(error="Amount is required.")
+    try:
+        amount = float(amount_raw)
+    except ValueError:
+        return _render_add_expense_form(error="Amount must be a valid number.")
+    if amount <= 0:
+        return _render_add_expense_form(error="Amount must be greater than zero.")
+
+    # ── Validate category ── #
+    if not category:
+        return _render_add_expense_form(error="Category is required.")
+    if category not in CATEGORIES:
+        return _render_add_expense_form(error="Invalid category selected.")
+
+    # ── Validate date ── #
+    if not date_str:
+        return _render_add_expense_form(error="Date is required.")
+    if not _is_valid_date(date_str):
+        return _render_add_expense_form(error="Date must be a valid YYYY-MM-DD format.")
+    if date_str > date.today().isoformat():
+        return _render_add_expense_form(error="Date cannot be in the future.")
+
+    # ── Insert ── #
+    user_id = session["user_id"]
+    create_expense(user_id, amount, category, date_str, description)
+    return redirect(url_for("profile"))
+
+
+def _render_add_expense_form(error=None):
+    """Render the add-expense form with standard template context."""
+    return render_template("add_expense.html",
+                           error=error,
+                           categories=CATEGORIES,
+                           today=date.today().isoformat())
 
 
 @app.route("/expenses/<int:id>/edit")
