@@ -1,0 +1,151 @@
+/* ------------------------------------------------------------------ */
+/* Analytics page — Coming soon                                        */
+/* ------------------------------------------------------------------ */
+
+.analytics-section {
+    min-height: calc(100vh - 60px - 100px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+}
+
+.analytics-inner {
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+
+/* --- Coming soon graphic --- */
+
+.coming-soon-graphic {
+    margin-bottom: 1.5rem;
+}
+
+.csg-icon {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.csg-icon svg {
+    width: 72px;
+    height: 72px;
+}
+
+/* --- Badge --- */
+
+.coming-soon-badge {
+    display: inline-block;
+    background: var(--accent-2-light);
+    color: var(--accent-2);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    margin-bottom: 1.25rem;
+}
+
+/* --- Title & description --- */
+
+.coming-soon-title {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+    line-height: 1.15;
+}
+
+.coming-soon-desc {
+    font-size: 1rem;
+    color: var(--ink-muted);
+    line-height: 1.7;
+    max-width: 400px;
+    margin-bottom: 2rem;
+}
+
+/* --- Feature teasers --- */
+
+.feature-teasers {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    width: 100%;
+    justify-content: center;
+}
+
+.teaser-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    max-width: 150px;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.teaser-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
+}
+
+.teaser-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.teaser-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    text-align: center;
+}
+
+/* --- Button --- */
+
+.analytics-inner .btn-primary {
+    padding: 0.7rem 2rem;
+    font-size: 0.95rem;
+}
+
+/* --- Responsive --- */
+
+@media (max-width: 600px) {
+    .analytics-section {
+        padding: 2.5rem 1.5rem;
+    }
+
+    .coming-soon-title {
+        font-size: 1.75rem;
+    }
+
+    .coming-soon-desc {
+        font-size: 0.95rem;
+    }
+
+    .feature-teasers {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .teaser-card {
+        max-width: 220px;
+        width: 100%;
+    }
+}

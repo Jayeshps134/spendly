@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — Spendly{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="analytics-section">
+    <div class="analytics-inner">
+
+        <div class="coming-soon-graphic" aria-hidden="true">
+            <div class="csg-icon">
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="10" y="44" width="12" height="26" rx="3" fill="currentColor" opacity="0.4"/>
+                    <rect x="30" y="30" width="12" height="40" rx="3" fill="currentColor" opacity="0.6"/>
+                    <rect x="50" y="18" width="12" height="52" rx="3" fill="currentColor" opacity="0.8"/>
+                    <rect x="50" y="18" width="12" height="52" rx="3" fill="currentColor" opacity="0.8"/>
+                    <rect x="60" y="8" width="12" height="62" rx="3" fill="currentColor" opacity="1"/>
+                </svg>
+            </div>
+        </div>
+
+        <span class="coming-soon-badge">Coming soon</span>
+
+        <h1 class="coming-soon-title">Analytics</h1>
+
+        <p class="coming-soon-desc">
+            Visualize your spending patterns with interactive charts and graphs.
+            Track trends over time, compare categories, and uncover insights
+            to make smarter financial decisions — all in one place.
+        </p>
+
+        <div class="feature-teasers">
+            <div class="teaser-card">
+                <span class="teaser-icon">📊</span>
+                <span class="teaser-label">Spending Trends</span>
+            </div>
+            <div class="teaser-card">
+                <span class="teaser-icon">🥧</span>
+                <span class="teaser-label">Category Charts</span>
+            </div>
+            <div class="teaser-card">
+                <span class="teaser-icon">📈</span>
+                <span class="teaser-label">Monthly Reports</span>
+            </div>
+        </div>
+
+        <a href="{{ url_for('profile') }}" class="btn-primary">Go to Profile</a>
+
+    </div>
+</section>
+
+{% endblock %}
